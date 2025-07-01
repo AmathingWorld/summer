@@ -1,0 +1,810 @@
+/* 引入字體 */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Noto+Sans+TC:wght@400;700&display=swap');
+
+:root {
+    /* 主題色 - 基礎 */
+    --primary-color: #4a6fa5; /* 藍色基調 */
+    --secondary-color: #61a0af; /* 藍綠基調 */
+    --accent-color: #ffc870;   /* 黃金基調 */
+
+    /* 通用色 */
+    --bg-color: #2c3e50; /* 深藍灰 */
+    --text-color: #ecf0f1; /* 淺灰 */
+    --panel-bg: rgba(44, 62, 80, 0.8); /* 半透明面板 */
+    --border-color: #34495e; /* 邊框 */
+    --xp-bar-fill: #27ae60; /* XP 綠色 */
+    --xp-bar-bg: #1abc9c;
+    --danger-color: #e74c3c; /* 危險紅色 */
+    --modal-bg: rgba(0, 0, 0, 0.7); /* 模態框背景 */
+
+    /* 職業特定顏色 (將在 JS 中動態更新 body class 來應用) */
+    --job-accent: var(--accent-color);
+    --job-primary: var(--primary-color);
+}
+
+body {
+    font-family: 'Noto Sans TC', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    box-sizing: border-box;
+    background-image: url('images/knight_background.png'); /* 預設背景 */
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    transition: background-image 0.5s ease-in-out;
+}
+
+.container {
+    background-color: var(--panel-bg);
+    border: 2px solid var(--border-color);
+    border-radius: 15px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    padding: 30px;
+    width: 100%;
+    max-width: 800px;
+    text-align: center;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+}
+
+header {
+    margin-bottom: 30px;
+}
+
+.character-select {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 25px;
+}
+
+.char-button {
+    background-color: var(--border-color);
+    color: var(--text-color);
+    border: 2px solid transparent;
+    border-radius: 10px;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.8em;
+}
+
+.char-button img {
+    border-radius: 50%;
+    border: 2px solid var(--job-accent); /* 動態邊框色 */
+    transition: border-color 0.3s ease;
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+}
+
+.char-button:hover {
+    background-color: rgba(var(--border-color), 0.7);
+    transform: translateY(-3px);
+}
+
+.char-button.active {
+    border-color: var(--job-accent); /* 動態邊框色 */
+    background-color: var(--job-primary); /* 動態背景色 */
+    box-shadow: 0 0 15px rgba(255, 200, 112, 0.5); /* 預設為騎士金色的陰影 */
+}
+
+/* 職業特定樣式 (通過 body class 控制) */
+body.job-knight {
+    --job-primary: #4a6fa5; /* 騎士藍 */
+    --job-accent: #ffc870;   /* 騎士金 */
+}
+body.job-sage {
+    --job-primary: #c996ac; /* 賢者粉 */
+    --job-accent: #e0d0bb;   /* 賢者米 */
+}
+body.job-explorer {
+    --job-primary: #6c7a89; /* 探險家灰藍 */
+    --job-accent: #f0ad4e;   /* 探險家橙 */
+}
+body.job-artisan {
+    --job-primary: #a78864; /* 工匠棕 */
+    --job-accent: #92b5b3;   /* 工匠青綠 */
+}
+body.job-healer {
+    --job-primary: #8dcb7b; /* 治療師淺綠 */
+    --job-accent: #fffacd;   /* 治療師檸檬黃 */
+}
+
+
+/* 將動態顏色應用到通用元素 */
+#char-avatar {
+    border-color: var(--job-accent);
+}
+#char-name, #char-job-name, h3, .xp-award, #current-stats-week {
+    color: var(--job-accent);
+}
+.task-checkbox {
+    border-color: var(--job-accent);
+}
+.header-buttons button,
+.reset-section button,
+.stats-date-selector button,
+.modal button:not(.delete-task-btn) { /* 排除任務設定中的刪除按鈕 */
+    background-color: var(--job-primary);
+}
+
+
+.character-info {
+    display: flex;
+    flex-wrap: wrap; /* 允許換行 */
+    align-items: center;
+    justify-content: center;
+    gap: 25px;
+    background-color: var(--border-color);
+    padding: 20px;
+    border-radius: 10px;
+    position: relative; /* 為了設定按鈕定位 */
+}
+
+.char-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#char-avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    transition: border-color 0.3s ease;
+}
+
+#char-name {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 1.5em;
+    margin-top: 10px;
+    transition: color 0.3s ease;
+}
+
+.char-job-display {
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 0.9em;
+    margin-top: 5px;
+    color: var(--text-color);
+}
+
+.stats-group {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.level-info, .money-info, .combat-stats p {
+    text-align: left;
+}
+
+.level-info p, .money-info p, .combat-stats p {
+    font-family: 'Press Start 2P', cursive;
+    margin: 5px 0;
+    font-size: 0.9em;
+}
+
+/* 新增戰鬥屬性樣式 */
+.combat-stats {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+    margin-top: 10px;
+}
+.combat-stats p {
+    margin: 0;
+}
+
+
+.xp-bar-container {
+    width: 200px;
+    height: 20px;
+    background-color: var(--xp-bar-bg);
+    border: 2px solid var(--xp-bar-fill);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 5px;
+}
+
+.xp-bar {
+    height: 100%;
+    width: 0%;
+    background-color: var(--xp-bar-fill);
+    transition: width 0.5s ease-out;
+    border-radius: 8px;
+}
+
+.money-info {
+    color: var(--accent-color);
+}
+
+/* 設定按鈕群組 */
+.header-buttons {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    flex-direction: column; /* 垂直排列 */
+    gap: 8px; /* 按鈕間距 */
+}
+
+.settings-button {
+    background-color: rgba(var(--border-color), 0.7);
+    color: var(--text-color);
+    border: none;
+    border-radius: 5px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 0.8em;
+    transition: background-color 0.3s ease;
+}
+.settings-button:hover {
+    background-color: var(--border-color);
+    transform: none; /* 覆蓋通用按鈕的 hover 效果 */
+}
+
+main {
+    margin-top: 30px;
+}
+
+h3 {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 1.3em;
+    margin-bottom: 20px;
+    transition: color 0.3s ease;
+}
+
+.task-list, .skill-list { /* 統一列表樣式 */
+    list-style: none;
+    padding: 0;
+    margin-bottom: 25px;
+}
+
+.task-item, .skill-item, .managed-task-item { /* 統一項目樣式 */
+    background-color: var(--border-color);
+    border: 1px solid rgba(var(--text-color), 0.2);
+    border-radius: 8px;
+    margin-bottom: 10px;
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    position: relative;
+    font-size: 1.1em;
+}
+
+.task-item.completed {
+    background-color: rgba(var(--xp-bar-fill), 0.2);
+    opacity: 0.7;
+    text-decoration: line-through;
+    color: #b0c4de; /* 淺藍灰 */
+}
+
+.task-item.completed .xp-award,
+.task-item.completed .money-award {
+    display: none; /* 完成後隱藏 XP 和金錢提示 */
+}
+
+.task-checkbox {
+    width: 20px;
+    height: 20px;
+    margin-right: 15px;
+    cursor: pointer;
+    border: 2px solid var(--job-accent);
+    border-radius: 4px;
+    background-color: var(--text-color);
+    appearance: none;
+    -webkit-appearance: none;
+    outline: none;
+    position: relative;
+    flex-shrink: 0;
+    transition: border-color 0.3s ease, background-color 0.3s ease;
+}
+
+.task-checkbox:checked {
+    background-color: var(--xp-bar-fill);
+    border-color: var(--xp-bar-fill);
+}
+
+.task-checkbox:checked::before {
+    content: '✓';
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-size: 16px;
+    line-height: 1;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.task-content {
+    flex-grow: 1;
+    text-align: left;
+}
+
+.xp-award, .money-award {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.9em;
+    color: var(--job-accent);
+    margin-left: 10px;
+    flex-shrink: 0;
+    transition: color 0.3s ease;
+}
+
+/* 招式列表的樣式 */
+.skill-item {
+    font-family: 'Noto Sans TC', sans-serif;
+    justify-content: flex-start;
+    gap: 15px;
+}
+.skill-item .skill-name {
+    font-weight: bold;
+    color: var(--accent-color);
+}
+.skill-item .skill-attack {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.9em;
+    color: var(--text-color);
+}
+
+
+/* 任務編輯與新增輸入框 (統一為 task-input) */
+.task-input {
+    padding: 10px 15px;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-size: 1em;
+    outline: none;
+}
+.task-input::placeholder {
+    color: rgba(var(--text-color), 0.7);
+}
+.task-input.small-input {
+    max-width: 100px;
+}
+
+
+.reset-section {
+    margin-top: 30px;
+}
+
+.reset-section p.reset-note {
+    font-size: 0.9em;
+    color: rgba(var(--text-color), 0.8);
+    margin-top: 10px;
+}
+
+hr {
+    border: none;
+    border-top: 1px dashed var(--border-color);
+    margin: 40px 0;
+}
+
+/* 統計表樣式 */
+.stats-section {
+    margin-top: 40px;
+}
+
+.stats-date-selector {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+#current-stats-week {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 1.1em;
+    transition: color 0.3s ease;
+}
+
+.chart-options {
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.chart-options label {
+    font-family: 'Noto Sans TC', sans-serif;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.chart-options input[type="radio"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--job-accent);
+    border-radius: 50%;
+    background-color: var(--text-color);
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+.chart-options input[type="radio"]:checked {
+    background-color: var(--job-primary);
+    border-color: var(--job-accent);
+}
+
+
+.chart-container {
+    background-color: var(--border-color);
+    padding: 15px;
+    border-radius: 10px;
+    position: relative; /* Chart.js tooltips will position relative to this */
+    margin-top: 20px;
+    height: 300px; /* 固定高度，避免圖表尺寸不穩定 */
+    display: flex; /* 讓 canvas 居中 */
+    justify-content: center;
+    align-items: center;
+}
+
+/* 全域重置按鈕 */
+.global-reset-section {
+    margin-top: 40px;
+}
+
+.danger-button {
+    background-color: var(--danger-color);
+    box-shadow: 0 0 10px rgba(var(--danger-color), 0.5);
+}
+
+.danger-button:hover {
+    background-color: #c0392b;
+    transform: translateY(-2px);
+}
+
+
+/* Modal 樣式 */
+.modal {
+    display: none; /* 預設隱藏 */
+    position: fixed; /* 固定定位 */
+    z-index: 1000; /* 確保在最上層 */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto; /* 允許滾動 */
+    background-color: var(--modal-bg);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: var(--panel-bg);
+    margin: auto;
+    padding: 30px;
+    border: 2px solid var(--border-color);
+    border-radius: 15px;
+    width: 80%;
+    max-width: 600px; /* 稍微加大寬度以容納任務編輯 */
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    position: relative;
+    animation: fadeInScale 0.3s ease-out;
+}
+
+@keyframes fadeInScale {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+
+.close-button {
+    color: var(--text-color);
+    position: absolute;
+    top: 15px;
+    right: 25px;
+    font-size: 30px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+.close-button:hover,
+.close-button:focus {
+    color: var(--job-accent);
+}
+
+.modal h2 {
+    font-family: 'Press Start 2P', cursive;
+    color: var(--job-accent);
+    margin-bottom: 25px;
+    font-size: 1.8em;
+}
+
+.setting-group {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.setting-item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.setting-item label {
+    font-family: 'Noto Sans TC', sans-serif;
+    font-weight: bold;
+    color: var(--text-color);
+    font-size: 1.1em;
+}
+
+.modal button { /* 通用 Modal 內按鈕樣式 */
+    background-color: var(--job-primary);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 25px;
+    font-size: 1.1em;
+    margin-top: 20px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+/* 任務設定介面樣式 */
+.task-management-section {
+    margin-bottom: 30px;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 20px;
+    background-color: rgba(var(--border-color), 0.5);
+}
+
+.task-management-section h3 {
+    font-family: 'Noto Sans TC', sans-serif; /* 使用更柔和的字體 */
+    font-size: 1.2em;
+    color: var(--accent-color);
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+.add-new-task-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.add-new-task-form input {
+    flex-grow: 1;
+    max-width: 180px;
+}
+.add-new-task-form button {
+    margin-top: 0;
+    padding: 10px 15px;
+    font-size: 1em;
+    flex-shrink: 0;
+    background-color: var(--job-primary); /* 使用主題色 */
+}
+
+/* 任務列表在設定介面中的樣式 */
+.managed-tasks {
+    max-height: 300px; /* 設定最大高度以便滾動 */
+    overflow-y: auto;
+    padding-right: 10px; /* 留出滾動條空間 */
+    /* 自定義滾動條 */
+    scrollbar-width: thin;
+    scrollbar-color: var(--job-accent) var(--border-color);
+}
+
+.managed-tasks::-webkit-scrollbar {
+    width: 8px;
+}
+
+.managed-tasks::-webkit-scrollbar-track {
+    background: var(--border-color);
+    border-radius: 10px;
+}
+
+.managed-tasks::-webkit-scrollbar-thumb {
+    background-color: var(--job-accent);
+    border-radius: 10px;
+    border: 2px solid var(--border-color);
+}
+
+
+.managed-task-item {
+    padding: 10px 15px;
+    background-color: var(--bg-color); /* 比外層淺一點 */
+    gap: 5px; /* 縮小間距 */
+    flex-wrap: wrap; /* 允許換行 */
+}
+.managed-task-item:last-child {
+    margin-bottom: 0;
+}
+
+
+.managed-task-item input[type="text"],
+.managed-task-item input[type="number"] {
+    flex-grow: 1;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    padding: 5px 8px;
+    font-size: 0.95em;
+    background-color: #3e526c; /* 稍淺的背景 */
+}
+
+.managed-task-item .task-name-input {
+    max-width: 180px; /* 任務名稱輸入框寬度 */
+}
+.managed-task-item .task-xp-input,
+.managed-task-item .task-money-input {
+    max-width: 70px; /* 數值輸入框寬度 */
+    text-align: center;
+}
+
+.delete-task-btn {
+    background-color: var(--danger-color);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 6px 10px;
+    cursor: pointer;
+    font-size: 0.8em;
+    margin-left: 10px;
+    margin-top: 0; /* 覆蓋 modal button 的 margin-top */
+    transition: background-color 0.2s ease;
+    flex-shrink: 0;
+}
+.delete-task-btn:hover {
+    background-color: #c0392b;
+    transform: translateY(-1px);
+}
+
+.delete-task-btn:disabled {
+    background-color: #6c7a89;
+    cursor: not-allowed;
+    opacity: 0.7;
+    transform: none;
+}
+
+.manage-tasks-note {
+    font-size: 0.85em;
+    color: rgba(var(--text-color), 0.7);
+    margin-top: 15px;
+    text-align: left;
+}
+
+/* 角色設定介面中的職業和頭像選項 */
+.job-options, .avatar-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    width: 100%;
+}
+
+.job-option, .avatar-option {
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    padding: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 0.9em;
+    color: var(--text-color);
+}
+
+.job-option img, .avatar-option img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid transparent;
+    transition: border-color 0.3s ease;
+}
+
+.job-option.selected, .avatar-option.selected {
+    background-color: var(--job-primary);
+    border-color: var(--job-accent);
+    box-shadow: 0 0 10px rgba(255, 200, 112, 0.5); /* 預設為騎士金色的陰影 */
+    transform: translateY(-3px);
+}
+.job-option.selected img, .avatar-option.selected img {
+    border-color: var(--job-accent);
+}
+
+/* 媒體查詢：響應式設計 */
+@media (max-width: 768px) {
+    .container {
+        padding: 15px;
+        margin: 5px;
+    }
+    .character-info {
+        flex-direction: column;
+        text-align: center;
+        gap: 15px;
+        padding: 15px;
+    }
+    .char-display {
+        margin-bottom: 0;
+    }
+    .xp-bar-container {
+        width: 100%;
+        max-width: 250px;
+    }
+    /* 調整 header-buttons 在小螢幕下的位置和排列 */
+    .header-buttons {
+        position: static; /* 讓它回到正常文檔流 */
+        flex-direction: row; /* 水平排列 */
+        justify-content: center;
+        margin-top: 15px;
+        width: 100%;
+    }
+    .settings-button {
+        flex-grow: 1; /* 讓按鈕平均分佈 */
+    }
+
+    .stats-date-selector {
+        flex-direction: column;
+        gap: 10px;
+    }
+    .modal-content {
+        width: 90%;
+        padding: 20px;
+    }
+    .chart-container {
+        height: 250px; /* 小螢幕調整圖表高度 */
+    }
+
+    /* 任務管理介面在小螢幕下的調整 */
+    .add-new-task-form {
+        flex-direction: column;
+        align-items: center;
+    }
+    .add-new-task-form input, .add-new-task-form button {
+        width: 100%;
+        max-width: 280px; /* 限制寬度 */
+    }
+    .managed-task-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 12px;
+    }
+    .managed-task-item input {
+        width: 100%; /* 輸入框佔滿寬度 */
+        max-width: none;
+    }
+    .managed-task-item .task-name-input {
+        order: -1; /* 任務名稱放最上面 */
+    }
+    .delete-task-btn {
+        margin-left: 0;
+        width: 100%;
+    }
+}

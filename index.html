@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RPG 每日檢核表</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="character-select">
+                <button id="select-male" class="char-button active" data-job-id="knight">
+                    <img src="images/male_knight.png" alt="晨曦騎士頭像">
+                    <span>晨曦騎士</span>
+                </button>
+                <button id="select-female" class="char-button" data-job-id="sage">
+                    <img src="images/female_sage.png" alt="星語賢者頭像">
+                    <span>星語賢者</span>
+                </button>
+            </div>
+            <div class="character-info">
+                <div class="char-display">
+                    <img id="char-avatar" src="images/male_knight.png" alt="角色頭像">
+                    <h2 id="char-name">晨曦騎士</h2>
+                    <p class="char-job-display">職業: <span id="char-job-name">騎士</span></p>
+                </div>
+                <div class="stats-group">
+                    <div class="level-info">
+                        <p>等級: <span id="char-level">1</span></p>
+                        <div class="xp-bar-container">
+                            <div id="char-xp-bar" class="xp-bar"></div>
+                        </div>
+                        <p>XP: <span id="char-current-xp">0</span> / <span id="char-xp-needed">100</span></p>
+                    </div>
+                    <div class="money-info">
+                        <p>金錢: <span id="char-money">0</span> 💰</p>
+                    </div>
+                    <div class="combat-stats">
+                        <p>攻擊力: <span id="char-attack">0</span> ⚔️</p>
+                        <p>防禦力: <span id="char-defense">0</span> 🛡️</p>
+                    </div>
+                </div>
+                <div class="header-buttons">
+                    <button id="settings-btn" class="settings-button">⚙️ 角色設定</button>
+                    <button id="manage-tasks-btn" class="settings-button">📝 任務設定</button>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <h3>今日任務</h3>
+            <ul id="task-list" class="task-list">
+                </ul>
+
+            <div class="reset-section">
+                <button id="reset-daily-tasks-btn">重置今日任務 (手動)</button>
+                <p class="reset-note">每日 UTC+8 00:00 自動重置</p>
+            </div>
+
+            <hr> <div class="skills-section">
+                <h3>已學習招式</h3>
+                <ul id="skill-list" class="skill-list">
+                    </ul>
+            </div>
+
+            <hr> <div class="stats-section">
+                <h3>過去一週統計</h3>
+                <div class="stats-date-selector">
+                    <button id="prev-week-btn">&lt; 上一週</button>
+                    <span id="current-stats-week"></span>
+                    <button id="next-week-btn">下一週 &gt;</button>
+                </div>
+                <div class="chart-options">
+                    <label><input type="radio" name="chart-type" value="tasks" checked> 完成任務數</label>
+                    <label><input type="radio" name="chart-type" value="xp"> 獲得經驗值</label>
+                    <label><input type="radio" name="chart-type" value="money"> 獲得金錢</label>
+                </div>
+                <div class="chart-container">
+                    <canvas id="weeklyStatsChart"></canvas>
+                </div>
+            </div>
+
+            <hr> <div class="global-reset-section">
+                <button id="full-reset-btn" class="danger-button">✨ 重置所有數值 (慎用！)</button>
+            </div>
+        </main>
+    </div>
+
+    <div id="settings-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" data-modal-id="settings-modal">&times;</span>
+            <h2>⚙️ 角色設定</h2>
+            <div class="setting-group">
+                <div class="setting-item">
+                    <label for="char-name-input">角色名稱:</label>
+                    <input type="text" id="char-name-input" placeholder="輸入新名稱">
+                </div>
+                <div class="setting-item">
+                    <label>選擇職業:</label>
+                    <div id="job-selection" class="job-options">
+                        </div>
+                </div>
+                <div class="setting-item">
+                    <label>選擇頭像:</label>
+                    <div id="avatar-selection" class="avatar-options">
+                        </div>
+                </div>
+            </div>
+            <button id="save-settings-btn">保存設定</button>
+        </div>
+    </div>
+
+    <div id="manage-tasks-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" data-modal-id="manage-tasks-modal">&times;</span>
+            <h2>📝 任務設定</h2>
+
+            <div class="task-management-section">
+                <h3>新增任務</h3>
+                <div class="add-new-task-form">
+                    <input type="text" id="new-managed-task-name" placeholder="任務名稱" class="task-input">
+                    <input type="number" id="new-managed-task-xp" placeholder="經驗值" value="50" min="10" class="task-input small-input">
+                    <input type="number" id="new-managed-task-money" placeholder="金錢" value="20" min="0" class="task-input small-input">
+                    <button id="add-managed-task-btn">新增</button>
+                </div>
+            </div>
+
+            <div class="task-management-section">
+                <h3>編輯/刪除任務</h3>
+                <ul id="managed-task-list" class="task-list managed-tasks">
+                    </ul>
+                <p class="manage-tasks-note">預設任務無法刪除。</p>
+            </div>
+            <button id="save-managed-tasks-btn">關閉</button>
+        </div>
+    </div>
+
+
+    <script src="script.js"></script>
+</body>
+</html>
